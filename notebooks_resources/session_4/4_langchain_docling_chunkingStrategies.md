@@ -19,8 +19,34 @@ The response will always be generated in the context of python.
 * To tokenize, langchain library is `langchain-text-splitters`, to import, use:
 `from langchain_text_splitters import CharacterTextSplitter` (`CharacterTextSplitter`) does split on character, library has a lot more.  
 
+However, here the tokenization does not mean, the paragraph isn't being converted to 
+
+The `split_documents` method does NOT convert your text into tokens.
+
+It returns a list of plain text strings (or Document objects containing text).
+
+The tiktoken encoder (`cl100k_base`) is used exclusively as a "measuring tape" behind the scenes. LangChain uses it to count how many OpenAI tokens are in a piece of text.
+
+It counts characters, estimates the token count, and cuts the text when the count reaches ~100.
+
+The reason to use the Open AI tokenizer here is that, it will eventually feed these chunks into an GPT OSS LLM to generate an answer. The idea is to guarantee that no single chunk, when combined with the prompt, exceeds the LLM's context window. It has nothing to do with the actual embedding model.
+
+Result: documents is a list of text snippets, each roughly 100 tokens long (by OpenAI's measurement). 
 After tokenization, 
 Next step is embedding later indexing 
+
+In the Embedding Step (The Hugging Face model)
+
+`EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"`
+`embedder = HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL)`
+
+What actually happens:
+
+You are initializing a local embedding model.
+
+When you later call `embedder.embed_documents(documents)`, this model is using its own, completely separate tokenizer (which is based on WordPiece, not OpenAI's cl100k_base).
+
+This tokenizer will convert your text into token IDs to feed into the neural network to produce vector embeddings.
 
 For RAG pipeline
 
