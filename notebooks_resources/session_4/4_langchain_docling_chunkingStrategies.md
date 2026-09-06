@@ -21,3 +21,23 @@ The response will always be generated in the context of python.
 
 After tokenization, 
 Next step is embedding later indexing 
+
+For RAG pipeline
+
+there are two ways:
+
+`from langchain_core.prompts import PromptTemplate, ChatPromptTemplate`
+
+`RAG_PROMPT = PromptTemplate(
+    input_variables=["context", "question"],
+    template="Answer the question based on the context below. If the answer is not contained within the context, say 'I don't know.'\n\nContext: {context}\n\nQuestion: {question}\nAnswer:",
+)`
+
+and 
+
+`RAG_PROMPT = ChatPromptTemplate.from_messages([
+    ("system", "Answer using ONLY the context below. Cite section names. Say 'I don't know' if unsure."),
+    ("human", "Context:\n{context}\n\nQuestion: {question}")
+])`
+
+The fundamental difference is output type and model alignment: PromptTemplate produces a single raw string for traditional text-completion models, while ChatPromptTemplate produces a structured list of role-based messages (SystemMessage, HumanMessage) tailored for modern chat models.
